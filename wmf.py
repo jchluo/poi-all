@@ -5,7 +5,9 @@ import scipy.sparse as sparse
 from scipy.sparse.linalg import spsolve
 
 from xmodels import *
-from util import *
+from utils import *
+
+__all__ = ["ImplicitMF"]
 
 class ImplicitMF(Recommender):
     def __init__(self, matrix, num_factors=10, num_iterations=30,
@@ -70,10 +72,10 @@ class ImplicitMF(Recommender):
         
     
 if __name__ == "__main__":
-    mtrain = load_matrix(get_train_name("foursquare"))
-    mtest = load_matrix(get_test_name("foursquare"))
+    mtrain = load_matrix(Filename("foursquare").train)
+    mtest = load_matrix(Filename("foursquare").test)
     mf = ImplicitMF(mtrain)
     eva = Evaluation(mtest)
     def hook(model):
-        save_model(model, "./model.pkl")
+        save_model(model, "./output/model_%i.pkl" % model.current)
     mf.train(before=eva.test, after=hook)

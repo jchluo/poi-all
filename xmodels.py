@@ -16,14 +16,15 @@ class Recommender(object):
 
 
 def num_hits(args):
-    evaluation, model, user = args
-    return len(evaluation.hits(model, user))
+    evaluation, user = args
+    return len(evaluation.hits(user))
 
 
 class Evaluation(object):
-    def __init__(self, matrix, N=5):
+    def __init__(self, matrix, N=5, model=None):
         self.matrix = matrix
         self.N = N
+        self.model = model
         self.num_users = matrix.shape[0]
         self.num_items = matrix.shape[1]
         # valid users
@@ -36,22 +37,26 @@ class Evaluation(object):
             raise ValueError("Test checkin set should not be empty.")
         #self.valids = self.num_users
 
-    def hits(self, model, user):
+    def hits(self, user, model=None):
+        if model is not None:
+            self.model = model
         pois = np.nonzero(self.matrix[user])[1]
         if len(pois) <= 0:
             return []
 
         scores = []
         for poi in xrange(self.num_items):
-            scores.append((poi, model.predict(user, poi)))
+            scores.append((poi, self.model.predict(user, poi)))
         scores.sort(key=lambda x: x[1], reverse=True)
         return [poi for poi, score in scores[: self.N] if poi in pois]
 
-    def test(self, model):
+    def test(self, model=None):
+        if model is not None:
+            self.model = model
         # use thread pool
         def prepare():
             for user in xrange(self.num_users):
-                yield (self, model, user)
+                yield (self, user)
 
         pool = Pool(4)
         matchs = pool.map(num_hits, prepare()) 
