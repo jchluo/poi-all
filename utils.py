@@ -29,28 +29,33 @@ def load_matrix(filename):
     col = []
     data = []
 
-    checkins = 0
+    count = 0
     users = set()
     items = set()
-
+    checkins  = set()
+    
     for i, line in enumerate(open(filename, 'r')):
         params = line.strip().split('\t')
         user = int(params[0][5:])
         item = int(params[1][4:])
         frequence = 1
 
+        if (user, item) in checkins:
+            continue
+        checkins.add((user, item))
+
         row.append(user)
         col.append(item)
         data.append(frequence)
         
-        checkins += 1
+        count += 1
         users.add(user)
         items.add(item)
 
     matrix = sparse.csr_matrix((data, (row, col)), shape=(max(users) + 1, max(items) + 1))
     t1 = time.time()
     print "load file %s" % filename
-    print "load %i checkins" % checkins 
+    print "load %i checkins" % count 
     print "load %i users" % len(users)
     print "load %i items" % len(items)
     print 'time %.4f seconds' % (t1 - t0)
