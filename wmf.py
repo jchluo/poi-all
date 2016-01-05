@@ -16,7 +16,7 @@ class ImplicitMF(Recommender):
         self.num_factors = num_factors
         self.num_iterations = num_iterations
         self.reg_param = reg_param
-        self.iteration = 0 
+        self.current = 0 
         # init factor
         self.user_vectors = np.random.normal(size=(self.num_users,
                                                    self.num_factors))
@@ -24,8 +24,8 @@ class ImplicitMF(Recommender):
                                                    self.num_factors))
 
     def train(self, before=None, after=None):
-        while self.iteration < self.num_iterations:
-            self.iteration += 1 
+        while self.current < self.num_iterations:
+            self.current += 1 
             t0 = time.time()
             # call back before hook
             if before is not None:
@@ -40,7 +40,7 @@ class ImplicitMF(Recommender):
                 after(self)
 
             t1 = time.time()
-            print 'iteration %i finished in %f seconds' % (self.iteration, t1 - t0)
+            print 'iteration %i finished in %f seconds' % (self.current, t1 - t0)
 
     def predict(self, user, item):
         return self.user_vectors[user].T.dot(self.item_vectors[item])
@@ -67,8 +67,6 @@ class ImplicitMF(Recommender):
             solve_vecs[i] = xu
 
         return solve_vecs
-
-        
         
     
 if __name__ == "__main__":
@@ -76,4 +74,6 @@ if __name__ == "__main__":
     mtest = load_matrix(get_test_name("foursquare"))
     mf = ImplicitMF(mtrain)
     eva = Evaluation(mtest)
-    mf.train(before=eva.test)
+    def hook(model):
+        save_model(model, "./model.pkl")
+    mf.train(before=eva.test, after=hook)

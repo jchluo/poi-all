@@ -1,5 +1,6 @@
 
 import time
+import cPickle
 import numpy as np
 import scipy.sparse as sparse
 
@@ -49,4 +50,15 @@ def load_matrix(filename):
     print 'time %.4f seconds' % (t1 - t0)
     print 'Finished loading.' 
     return matrix
+
+
+def save_model(model, filename):
+    f = open(filename, "w") 
+    cPickle.dump(model, f)
+    f.close()
+
+
+def read_model(filename):
+    return cPickle.load(filename)
+
 
