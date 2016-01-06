@@ -54,14 +54,14 @@ def _proxy_test(args):
 class Evaluation(object):
     def __init__(self, matrix, model, N=5, users=None, _pool_num=6):
         """
-            Evaluate a model.Report precision and recall.
-            matrix: test checkin matrix, `sparse matrix`
-            model: model for test, must has `recommend` methid
-            N    : recommend N pois
-            users: users for test, should be iterated
-            _pool_num: thread number to test, most cases default is ok.
-                        if 0, then turn off multiple threads.
-            usage:
+        Evaluate a model.Report precision and recall.
+        matrix: test checkin matrix, `sparse matrix`
+        model: model for test, must has `recommend` methid
+        N    : recommend N pois
+        users: users for test, should be iterated
+        _pool_num: thread number to test, most cases default is ok.
+                    if 0, then turn off multiple threads.
+        usage:
             >>> from scipy import sparse
             >>> import numpy as np
             >>> matrix = sparse.csr_matrix(np.matrix([[0, 1], [1, 1]]))

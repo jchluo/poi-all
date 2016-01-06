@@ -9,10 +9,15 @@ log = logging.getLogger(__name__)
 
 class Filename(object):
     def __init__(self, dataset, parent="."):
+        self._dataset = dataset
+        self.parent = parent
         self.dataset = "%s/datasets/%s/data.txt" % (parent, dataset)
         self.train = "%s/datasets/%s/train.txt" % (parent, dataset)
         self.test = "%s/datasets/%s/test.txt" % (parent, dataset)
         self.locations = "%s/datasets/%s/locations.txt" % (parent, dataset)
+
+    def log(self, model_name):
+        return "%s/log/%s-%s.log" % (self.parent, self._dataset, model_name)
 
     
 def load_matrix(filename):
