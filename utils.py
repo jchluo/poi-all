@@ -1,8 +1,11 @@
 
 import time
 import cPickle
+import logging
 import numpy as np
 import scipy.sparse as sparse
+
+log = logging.getLogger(__name__)
 
 class Filename(object):
     def __init__(self, dataset, parent="."):
@@ -12,18 +15,6 @@ class Filename(object):
         self.locations = "%s/datasets/%s/locations.txt" % (parent, dataset)
 
     
-def get_data_name(dataset, parent="."):
-    return "%s/datasets/%s/data.txt" % (parent, dataset)
-
-
-def get_train_name(dataset, parent="."):
-    return "%s/datasets/%s/train.txt" % (parent, dataset)
-
-
-def get_test_name(dataset, parent="."):
-    return "%s/datasets/%s/test.txt" % (parent, dataset)
-
-
 def load_matrix(filename):
     t0 = time.time()
 
@@ -56,12 +47,9 @@ def load_matrix(filename):
 
     matrix = sparse.csr_matrix((data, (row, col)), shape=(max(users) + 1, max(items) + 1))
     t1 = time.time()
-    print "load file %s" % filename
-    print "load %i checkins" % count 
-    print "load %i users" % len(users)
-    print "load %i items" % len(items)
-    print 'time %.4f seconds' % (t1 - t0)
-    print 'Finished loading.' 
+    log.debug("load file %s" % filename)
+    log.debug("load %i checkins, %i users, %i pois." % (count, len(users), len(items)))
+    log.debug('time %.4f seconds' % (t1 - t0))
     return matrix
 
 
@@ -103,6 +91,22 @@ def load_locations(filename):
     return locations
  
 
+def setup_log(filename="debug.log"):
+    #sformat = "%(asctime)s %(filename)s[line:%(lineno)d]"\
+    #            " %(levelname)s %(message)s"
+    sformat = "%(asctime)s %(filename)s %(levelname)s %(message)s"
+    logging.basicConfig(level=logging.DEBUG,
+                        format=sformat,
+                        filename=filename,
+                        filemode="a")
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    console.setFormatter(logging.Formatter(sformat))
+    logging.getLogger('').addHandler(console)
+    log.info("new session")
+
+    
 if __name__ == "__main__":
     locs = poi_locations(Filename("foursquare").train)
     f = open(Filename("foursquare").locations, "w")

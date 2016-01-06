@@ -4,7 +4,7 @@ import numpy as np
 import scipy.sparse as sparse
 from scipy.sparse.linalg import spsolve
 
-from xmodels import *
+from models import *
 from utils import *
 
 __all__ = ["ImplicitMF"]

@@ -1,10 +1,9 @@
 
 import math
 import numpy as np
-from xmodels import *
-from utils import *
+from models import Recommender
 
-__all__ = ["distance", "KDE"]
+__all__ = ["distance", "KDE", "KDEModel"]
 
 def distance(point_x, point_y):  
     """distance between two point, unit is meter
@@ -67,18 +66,9 @@ class KDE(object):
 
 class KDEModel(Recommender):
     def __init__(self, matrix, locations, smooth=1.0):
+        super(KDEModel, self).__init__(matrix)
         self.kde = KDE(matrix, locations, smooth)
 
     def predict(self, user, item):
-        a = self.kde.probility(user, item)
-        #print a
-        return a
+        return self.kde.probility(user, item)
 
-
-if __name__ == "__main__":
-    train_matrix = load_matrix(Filename("foursquare").train)
-    test_matrix = load_matrix(Filename("foursquare").test)
-    locations = load_locations(Filename("foursquare").locations)
-    eva = Evaluation(test_matrix, fiter_matrix=train_matrix)
-    print "test" 
-    eva.test(KDEModel(train_matrix, locations))
