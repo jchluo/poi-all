@@ -5,26 +5,51 @@ import numpy as np
 __all__ = ["Recommender", "Evaluation"]
 
 class Recommender(object):
-    def __init__(self):
-        pass
+    def __init__(self, matrix):
+        super(Recommender, self).__init__()
+        self.matrix = matrix
+        self.num_users = matrix.shape[0]
+        self.num_items = matrix.shape[1]
 
     def train(self, before=None, after=None):
-        pass
+        raise NotImplementedError
 
     def predict(self, user, item):
-        pass
+        raise NotImplementedError
 
+    def recommend(self, user, num=5, ruleout=True):
+        scores = []
+        for poi in xrange(self.num_items):
+            scores.append((poi, self.predict(user, poi)))
+        scores.sort(key=lambda x: x[1], reverse=True)
 
+        if self.matrix is not None and ruleout:
+            ruleouts = set(np.nonzero(self.matrix[user])[1])
+        else:
+            ruleouts = set()
+
+        result = []
+        for poi, score in scores:
+            if poi in ruleouts:
+                continue
+            result.append(poi)
+            if len(result) >= num:
+                break
+        return result 
+
+        
 def num_hits(args):
     evaluation, user = args
     return len(evaluation.hits(user))
 
 
 class Evaluation(object):
-    def __init__(self, matrix, N=5, model=None):
+    def __init__(self, matrix, filter_matrix=None, N=5, model=None, _pool_num=6):
         self.matrix = matrix
         self.N = N
         self.model = model
+        self.filter_matrix = filter_matrix
+        self._pool_num = _pool_num
         self.num_users = matrix.shape[0]
         self.num_items = matrix.shape[1]
         # valid users
@@ -40,7 +65,7 @@ class Evaluation(object):
     def hits(self, user, model=None):
         if model is not None:
             self.model = model
-        pois = np.nonzero(self.matrix[user])[1]
+        pois = set(np.nonzero(self.matrix[user])[1])
         if len(pois) <= 0:
             return []
 
@@ -48,7 +73,21 @@ class Evaluation(object):
         for poi in xrange(self.num_items):
             scores.append((poi, self.model.predict(user, poi)))
         scores.sort(key=lambda x: x[1], reverse=True)
-        return [poi for poi, score in scores[: self.N] if poi in pois]
+        if self.filter_matrix is None:
+            return [poi for poi, score in scores[: self.N] if poi in pois]
+        else:
+            result = []
+            ruleouts = set(np.nonzero(self.filter_matrix[user])[1])
+            n = 0
+            for poi, score in scores:
+                if poi in ruleouts:
+                    continue
+                if poi in pois: 
+                    result.append(poi)
+                n += 1
+                if n >= self.N:
+                    break
+            return result 
 
     def test(self, model=None):
         if model is not None:
@@ -58,7 +97,7 @@ class Evaluation(object):
             for user in xrange(self.num_users):
                 yield (self, user)
 
-        pool = Pool(4)
+        pool = Pool(self._pool_num)
         matchs = pool.map(num_hits, prepare()) 
         pool.close()
         pool.join()

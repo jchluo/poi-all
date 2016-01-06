@@ -1,7 +1,6 @@
 
 from wmf import ImplicitMF 
 from utils import *
-if __name__ == "__main__":
-    model = read_model("output/model.pkl")
-    print model.predict(0, 0)
-    
+mf = read_model("output/model_2.pkl")
+print mf.predict(0, 0)
+print mf.recommend(0)

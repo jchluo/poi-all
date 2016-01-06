@@ -1,12 +1,10 @@
-#coding:utf8
-#计算两经纬度坐标之间的距离
 
 import math
-import matplotlib.pyplot as plt
 import numpy as np
+from xmodels import *
+from utils import *
 
 __all__ = ["distance", "KDE"]
-
 
 def distance(point_x, point_y):  
     """distance between two point, unit is meter
@@ -61,7 +59,26 @@ class KDE(object):
             loc_x = self.locations[poi]
             loc_y = self.locations[item]
             _dis = distance(loc_x, loc_y) / 1000.0 # to kilometer
-            prob = math.pow(math.e, -0.5 * math.pow(_dis, 2))
+            x = _dis / self.smooth
+            prob = math.pow(math.e, -0.5 * math.pow(x, 2))
             sum_prob += prob
         return sum_prob / (math.sqrt(2.0 * math.pi) * self.smooth * len(pois))
 
+
+class KDEModel(Recommender):
+    def __init__(self, matrix, locations, smooth=1.0):
+        self.kde = KDE(matrix, locations, smooth)
+
+    def predict(self, user, item):
+        a = self.kde.probility(user, item)
+        #print a
+        return a
+
+
+if __name__ == "__main__":
+    train_matrix = load_matrix(Filename("foursquare").train)
+    test_matrix = load_matrix(Filename("foursquare").test)
+    locations = load_locations(Filename("foursquare").locations)
+    eva = Evaluation(test_matrix, fiter_matrix=train_matrix)
+    print "test" 
+    eva.test(KDEModel(train_matrix, locations))

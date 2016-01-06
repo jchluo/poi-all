@@ -67,6 +67,7 @@ def split(dataset, train=0.7):
     trainfile.close()
     testfile.close()
             
+
 if __name__ == "__main__":
     #split("gowalla")
     count_max(get_train_name("foursquare"))

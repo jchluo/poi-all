@@ -12,9 +12,7 @@ __all__ = ["ImplicitMF"]
 class ImplicitMF(Recommender):
     def __init__(self, matrix, num_factors=10, num_iterations=30,
                  reg_param=0.8):
-        self.matrix = matrix
-        self.num_users = matrix.shape[0]
-        self.num_items = matrix.shape[1]
+        super(ImplicitMF, self).__init__(matrix);
         self.num_factors = num_factors
         self.num_iterations = num_iterations
         self.reg_param = reg_param
@@ -75,7 +73,7 @@ if __name__ == "__main__":
     mtrain = load_matrix(Filename("foursquare").train)
     mtest = load_matrix(Filename("foursquare").test)
     mf = ImplicitMF(mtrain)
-    eva = Evaluation(mtest)
+    eva = Evaluation(mtest, mtrain)
     def hook(model):
         save_model(model, "./output/model_%i.pkl" % model.current)
     mf.train(before=eva.test, after=hook)

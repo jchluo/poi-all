@@ -9,6 +9,8 @@ class Filename(object):
         self.dataset = "%s/datasets/%s/data.txt" % (parent, dataset)
         self.train = "%s/datasets/%s/train.txt" % (parent, dataset)
         self.test = "%s/datasets/%s/test.txt" % (parent, dataset)
+        self.locations = "%s/datasets/%s/locations.txt" % (parent, dataset)
+
     
 def get_data_name(dataset, parent="."):
     return "%s/datasets/%s/data.txt" % (parent, dataset)
@@ -36,8 +38,8 @@ def load_matrix(filename):
     
     for i, line in enumerate(open(filename, 'r')):
         params = line.strip().split('\t')
-        user = int(params[0][5:])
-        item = int(params[1][4:])
+        user = int(params[0])
+        item = int(params[1])
         frequence = 1
 
         if (user, item) in checkins:
@@ -76,3 +78,36 @@ def read_model(filename):
     return model
 
 
+def poi_locations(filename):
+    locations = {}
+    with open(filename) as in_file:
+        for line in in_file:
+            params = line.strip().split('\t')
+            item = int(params[1])
+            lat, lon = params[2].split(",")
+            lat = float(lat)
+            lon = float(lon)
+            locations[item] = (lat, lon)
+    return locations
+
+
+def load_locations(filename):
+    locations = {}
+    with open(filename) as in_file:
+        for line in in_file:
+            params = line.strip().split('\t')
+            item = int(params[0])
+            lat = float(params[1])
+            lon = float(params[2])
+            locations[item] = (lat, lon)
+    return locations
+ 
+
+if __name__ == "__main__":
+    locs = poi_locations(Filename("foursquare").train)
+    f = open(Filename("foursquare").locations, "w")
+    for poi in locs:
+        print >> f, "%d\t%.16f\t%.18f" % (poi, locs[poi][0], locs[poi][1])
+    f.close()
+
+#print poi_locations(Filename("foursquare").train)

@@ -1,5 +1,7 @@
 
+import time
 import numpy as np
+
 
 __all__ = ["Recommender", "Evaluation"]
 
@@ -44,10 +46,13 @@ class Evaluation(object):
     def test(self, model):
         nhits = 0
         _recall = 0.0
+        t0 = time.time()
         for i in xrange(self.num_users):
             pois = np.nonzero(self.matrix[i])[1]
             if len(pois) <= 0:
                 continue
+            t1 = time.time()
+            print "%i time: %f" % (i, t1 - t0)
 
             matchs = self.hits(model, i)
             nhits += len(matchs)
